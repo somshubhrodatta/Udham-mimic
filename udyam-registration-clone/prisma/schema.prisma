@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UdyamRegistration {
+  id                String    @id @default(cuid())
+  
+  // Step 1: Aadhaar & Mobile Verification
+  aadhaarNumber     String    @unique @db.VarChar(12)
+  mobileNumber      String?   @db.VarChar(10)
+  aadhaarVerified   Boolean   @default(false)
+  mobileVerified    Boolean   @default(false)
+  
+  // Step 2: PAN Verification
+  panNumber         String?   @unique @db.VarChar(10)
+  nameAsPerPan      String?   @db.VarChar(100)
+  dateOfBirth       DateTime?
+  panVerified       Boolean   @default(false)
+  
+  // Registration Status
+  status            RegistrationStatus @default(INITIATED)
+  
+  // Metadata
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  @@map("udyam_registrations")
+  @@index([aadhaarNumber])
+  @@index([panNumber])
+  @@index([status])
+}
+
+enum RegistrationStatus {
+  INITIATED
+  OTP_SENT
+  AADHAAR_VERIFIED
+  PAN_VERIFIED
+  COMPLETED
+  REJECTED
+}
